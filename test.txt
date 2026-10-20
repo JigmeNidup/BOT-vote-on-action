@@ -1,0 +1,28 @@
+Test teams
+Treasury working group
+Product council
+Grants committee
+
+Proposals
+
+Team: Treasury working group
+Title: Approve the Q4 vendor
+Description: Pay the current vendor for the next quarter, or record a different supplier.
+
+Team: Treasury working group
+Title: Keep the emergency reserve
+Description: Leave the reserve untouched until the next review.
+
+Team: Product council
+Title: Ship the member snapshot change
+Description: Release the update that freezes eligible voters when a proposal is created.
+
+Team: Grants committee
+Title: Fund the community workshop
+Description: Cover the venue and materials for one public workshop.
+
+No-vote suggestions
+Try the other vendor for one month first.
+Split the reserve and review it again next month.
+Delay the release until the voting page is checked.
+Host the workshop online instead of booking a venue.

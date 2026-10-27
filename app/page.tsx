@@ -5,6 +5,7 @@ import { useAuditMode } from "@/components/AuditMode";
 import { AuditIndex } from "@/components/AuditView";
 import { ContractGate, ErrorText, Loading, Page, PageHeader } from "@/components/ContractGate";
 import { ProposalList } from "@/components/ProposalList";
+import { botChain } from "@/lib/chain";
 import { proposalStatus } from "@/lib/contract";
 import { txError, useProposals, useTeams } from "@/lib/hooks";
 import type { Proposal, Team } from "@/lib/types";
@@ -30,7 +31,7 @@ export default function HomePage() {
         />
       ) : (
         <PageHeader
-          eyebrow="BOT Chain testnet"
+          eyebrow={botChain.name}
           title="Open decisions"
           text="Proposals still accepting a single vote from the wallets snapshotted when they were created."
           action={

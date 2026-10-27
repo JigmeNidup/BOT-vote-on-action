@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAccount, useReadContracts } from "wagmi";
 import { ContractGate, ErrorText, Loading, Page, PageHeader, TxStatus } from "@/components/ContractGate";
 import { TeamCard } from "@/components/TeamCard";
-import { botChainTestnet } from "@/lib/chain";
+import { botChain } from "@/lib/chain";
 import { contractAddress, hasContract, voteOnActionAbi } from "@/lib/contract";
 import { txError, useContractWrite, useTeams } from "@/lib/hooks";
 import type { Team } from "@/lib/types";
@@ -24,7 +24,7 @@ export default function TeamsPage() {
     query: { enabled: hasContract && teams.length > 0 },
   });
   const { isConnected, chainId } = useAccount();
-  const onBotChain = isConnected && chainId === botChainTestnet.id;
+  const onBotChain = isConnected && chainId === botChain.id;
   const [name, setName] = useState("");
   const [localError, setLocalError] = useState("");
   const write = useContractWrite();
@@ -77,7 +77,7 @@ export default function TeamsPage() {
             </button>
             {!isConnected ? <p className="mt-3 text-sm text-muted">Connect a wallet to create a team.</p> : null}
             {isConnected && !onBotChain ? (
-              <p className="mt-3 text-sm text-ember">Switch to BOT Chain testnet before creating a team.</p>
+              <p className="mt-3 text-sm text-ember">Switch to {botChain.name} before creating a team.</p>
             ) : null}
             {localError ? <p className="mt-3 text-sm text-ember">{localError}</p> : null}
             <div className="mt-3">

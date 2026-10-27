@@ -4,7 +4,7 @@ import { useState } from "react";
 import { getAddress, isAddress } from "viem";
 import { useAccount } from "wagmi";
 import { TxStatus } from "@/components/ContractGate";
-import { botChainTestnet, explorerUrl } from "@/lib/chain";
+import { botChain, explorerUrl } from "@/lib/chain";
 import { contractAddress, voteOnActionAbi } from "@/lib/contract";
 import { formatTime, sameAddress, shortAddress } from "@/lib/format";
 import { txError, useContractWrite } from "@/lib/hooks";
@@ -13,7 +13,7 @@ import type { Team } from "@/lib/types";
 export function TeamCard({ team, members }: { team: Team; members: `0x${string}`[] }) {
   const { address, isConnected, chainId } = useAccount();
   const isOwner = sameAddress(address, team.owner);
-  const onBotChain = isConnected && chainId === botChainTestnet.id;
+  const onBotChain = isConnected && chainId === botChain.id;
   const [memberInput, setMemberInput] = useState("");
   const [localError, setLocalError] = useState("");
   const write = useContractWrite();
@@ -127,7 +127,7 @@ export function TeamCard({ team, members }: { team: Team; members: `0x${string}`
         <p className="mt-4 text-sm text-muted">Only the team owner can add or remove members.</p>
       )}
       {isOwner && isConnected && !onBotChain ? (
-        <p className="mt-3 text-sm text-ember">Switch to BOT Chain testnet before changing members.</p>
+        <p className="mt-3 text-sm text-ember">Switch to {botChain.name} before changing members.</p>
       ) : null}
       {localError ? <p className="mt-3 text-sm text-ember">{localError}</p> : null}
       <div className="mt-3">

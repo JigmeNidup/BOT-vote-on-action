@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { decodeEventLog } from "viem";
 import { useAccount, useReadContracts } from "wagmi";
 import { ContractGate, ErrorText, Loading, Page, PageHeader, TxStatus } from "@/components/ContractGate";
-import { botChainTestnet } from "@/lib/chain";
+import { botChain } from "@/lib/chain";
 import { contractAddress, hasContract, voteOnActionAbi } from "@/lib/contract";
 import { txError, useContractWrite, useTeams } from "@/lib/hooks";
 import type { Team } from "@/lib/types";
@@ -15,7 +15,7 @@ const zeroAddress = "0x0000000000000000000000000000000000000000" as const;
 export default function NewProposalPage() {
   const router = useRouter();
   const { address, isConnected, chainId } = useAccount();
-  const onBotChain = isConnected && chainId === botChainTestnet.id;
+  const onBotChain = isConnected && chainId === botChain.id;
   const teamsQuery = useTeams();
   const teams = (teamsQuery.data ?? []) as Team[];
   const membership = useReadContracts({
@@ -131,7 +131,7 @@ export default function NewProposalPage() {
                   />
                 </div>
                 {isConnected && !onBotChain ? (
-                  <p className="text-sm text-ember">Switch to BOT Chain testnet before creating a proposal.</p>
+                  <p className="text-sm text-ember">Switch to {botChain.name} before creating a proposal.</p>
                 ) : null}
                 {localError ? <p className="text-sm text-ember">{localError}</p> : null}
                 <TxStatus

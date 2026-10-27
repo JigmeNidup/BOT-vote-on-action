@@ -8,7 +8,7 @@ import { useAuditMode } from "@/components/AuditMode";
 import { AuditDossier } from "@/components/AuditView";
 import { ContractGate, ErrorText, Loading, Page, TxStatus } from "@/components/ContractGate";
 import { VoteBar } from "@/components/VoteBar";
-import { botChainTestnet, explorerUrl } from "@/lib/chain";
+import { botChain, explorerUrl } from "@/lib/chain";
 import { contractAddress, hasContract, proposalStatus, voteChoice, voteOnActionAbi } from "@/lib/contract";
 import { formatTime, sameAddress, shortAddress } from "@/lib/format";
 import { txError, useContractWrite } from "@/lib/hooks";
@@ -30,7 +30,7 @@ export default function ProposalDetailPage() {
   const proposalId = valid ? BigInt(idText) : undefined;
   const { audit } = useAuditMode();
   const { address, isConnected, chainId } = useAccount();
-  const onBotChain = isConnected && chainId === botChainTestnet.id;
+  const onBotChain = isConnected && chainId === botChain.id;
 
   const proposalQuery = useReadContract({
     address: contractAddress ?? zeroAddress,
@@ -260,7 +260,7 @@ export default function ProposalDetailPage() {
               <h2 className="font-serif text-3xl">Your vote</h2>
               {!isConnected ? <p className="mt-3 text-sm text-muted">Connect a snapshotted wallet to vote.</p> : null}
               {isConnected && !onBotChain ? (
-                <p className="mt-3 text-sm text-ember">Switch to BOT Chain testnet before voting.</p>
+                <p className="mt-3 text-sm text-ember">Switch to {botChain.name} before voting.</p>
               ) : null}
               {isConnected && eligibleQuery.data === false ? (
                 <p className="mt-3 text-sm leading-relaxed text-muted">

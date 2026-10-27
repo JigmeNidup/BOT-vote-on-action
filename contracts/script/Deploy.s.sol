@@ -10,7 +10,7 @@ contract Deploy is Script {
 
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-        if (block.chainid != 968) revert WrongChain(block.chainid);
+        (string memory network, string memory file, string memory rpc, string memory explorer) = _target();
 
         vm.startBroadcast(deployerKey);
         VoteOnAction voteOnAction = new VoteOnAction();
@@ -21,13 +21,27 @@ contract Deploy is Script {
 
         if (vm.isContext(VmSafe.ForgeContext.ScriptBroadcast)) {
             string memory json = "deployment";
-            vm.serializeString(json, "network", "bot-testnet");
-            vm.serializeUint(json, "chainId", 968);
-            vm.serializeString(json, "rpcUrl", "https://rpc.bohr.life");
-            vm.serializeString(json, "explorerUrl", "https://scan.bohr.life");
+            vm.serializeString(json, "network", network);
+            vm.serializeUint(json, "chainId", block.chainid);
+            vm.serializeString(json, "rpcUrl", rpc);
+            vm.serializeString(json, "explorerUrl", explorer);
             string memory out = vm.serializeAddress(json, "contract", address(voteOnAction));
-            vm.writeFile("deployments/bot-testnet.json", out);
-            console2.log("wrote deployments/bot-testnet.json");
+            vm.writeFile(file, out);
+            console2.log("wrote", file);
         }
+    }
+
+    function _target()
+        internal
+        view
+        returns (string memory network, string memory file, string memory rpc, string memory explorer)
+    {
+        if (block.chainid == 677) {
+            return ("bot", "deployments/bot-mainnet.json", "https://rpc.botchain.ai", "https://scan.botchain.ai");
+        }
+        if (block.chainid == 968) {
+            return ("bot-testnet", "deployments/bot-testnet.json", "https://rpc.bohr.life", "https://scan.bohr.life");
+        }
+        revert WrongChain(block.chainid);
     }
 }

@@ -4,7 +4,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "deploy:testnet": "cd contracts && forge script script/Deploy.s.sol --rpc-url bohr --broadcast && cd .. && node scripts/use-deployment.mjs testnet",
+    "deploy:mainnet": "cd contracts && forge script script/Deploy.s.sol --rpc-url bot --broadcast && cd .. && node scripts/use-deployment.mjs mainnet",
+    "use:testnet": "node scripts/use-deployment.mjs testnet",
+    "use:mainnet": "node scripts/use-deployment.mjs mainnet"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.2",

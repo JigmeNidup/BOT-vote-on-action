@@ -1,6 +1,5 @@
 "use client";
 
-import { faucetUrl } from "@/lib/chain";
 import { hasContract } from "@/lib/contract";
 
 export function Page({ children }: { children: React.ReactNode }) {
@@ -37,12 +36,8 @@ export function ContractGate({ children }: { children: React.ReactNode }) {
         <p className="kicker">Setup</p>
         <h2 className="mt-2 font-serif text-3xl">Contract not configured</h2>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-          Deploy VoteOnAction to BOT Chain testnet, then set NEXT_PUBLIC_VOTE_ON_ACTION_ADDRESS. The deployer
-          account needs test BOT from the{" "}
-          <a className="font-semibold text-moss underline" href={faucetUrl}>
-            faucet
-          </a>
-          .
+          Deploy VoteOnAction to BOT Chain, then set NEXT_PUBLIC_VOTE_ON_ACTION_ADDRESS. The deployer
+          account needs BOT for gas.
         </p>
       </div>
     );

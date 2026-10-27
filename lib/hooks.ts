@@ -16,7 +16,7 @@ import {
   mapVotedLog,
   votedEvent,
 } from "@/lib/audit";
-import { botChainTestnet } from "@/lib/chain";
+import { botChain } from "@/lib/chain";
 import { contractAddress, hasContract, voteOnActionAbi } from "@/lib/contract";
 
 const zeroAddress = "0x0000000000000000000000000000000000000000" as const;
@@ -68,7 +68,7 @@ export type ChainProof = {
 };
 
 export function useChainProof() {
-  const client = usePublicClient({ chainId: botChainTestnet.id });
+  const client = usePublicClient({ chainId: botChain.id });
 
   return useQuery({
     queryKey: ["chain-proof", contractAddress],

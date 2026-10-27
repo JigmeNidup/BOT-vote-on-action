@@ -9,7 +9,7 @@ const serif = Fraunces({ subsets: ["latin"], variable: "--font-serif" });
 
 export const metadata: Metadata = {
   title: "Vote on Action",
-  description: "Record team decisions on BOT Chain testnet.",
+  description: "Record team decisions on BOT Chain.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

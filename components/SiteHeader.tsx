@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { ViewSlider, useAuditMode } from "@/components/AuditMode";
-import { botChainTestnet, explorerUrl } from "@/lib/chain";
+import { botChain, explorerUrl, networkLabel } from "@/lib/chain";
 import { contractAddress } from "@/lib/contract";
 import { shortAddress } from "@/lib/format";
 
@@ -31,7 +31,7 @@ function WalletControls({ tone = "light" }: { tone?: "light" | "dark" }) {
 
   useEffect(() => setMounted(true), []);
 
-  const onBotChain = chainId === botChainTestnet.id;
+  const onBotChain = chainId === botChain.id;
   const injected = connectors[0];
 
   if (!mounted) {
@@ -42,10 +42,10 @@ function WalletControls({ tone = "light" }: { tone?: "light" | "dark" }) {
     return (
       <div className="flex flex-wrap items-center gap-2">
         {onBotChain ? (
-          <span className="rounded-full bg-moss/15 px-3 py-1.5 text-xs font-semibold text-moss">Bohr · 968</span>
+          <span className="rounded-full bg-moss/15 px-3 py-1.5 text-xs font-semibold text-moss">{networkLabel} · {botChain.id}</span>
         ) : (
-          <button type="button" className="btn btn-danger" disabled={isSwitching} onClick={() => switchChain({ chainId: botChainTestnet.id })}>
-            {isSwitching ? "Switching…" : "Switch to BOT Chain"}
+          <button type="button" className="btn btn-danger" disabled={isSwitching} onClick={() => switchChain({ chainId: botChain.id })}>
+            {isSwitching ? "Switching…" : `Switch to ${botChain.name}`}
           </button>
         )}
         <span
@@ -118,7 +118,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-moss text-sm font-bold">V</span>
             <span className="block font-serif text-3xl leading-none">Vote on Action</span>
             <span className="mt-2 block text-xs uppercase tracking-[0.18em] text-white/50">
-              {audit ? "Audit trail" : "BOT Chain testnet"}
+              {audit ? "Audit trail" : botChain.name}
             </span>
           </Link>
           <NavLinks pathname={pathname} onDark />
@@ -156,7 +156,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         {audit ? (
           <p className="border-b border-gold/30 bg-gold/10 px-4 py-2 text-center text-sm text-ink lg:px-8">
-            Audit view reads chain 968. It does not send a transaction.
+            Audit view reads chain {botChain.id}. It does not send a transaction.
           </p>
         ) : null}
         <main>{children}</main>

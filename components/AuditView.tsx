@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useReadContract, useReadContracts } from "wagmi";
 import { EmptyState, ErrorText } from "@/components/ContractGate";
-import { explorerUrl } from "@/lib/chain";
+import { botChain, explorerUrl, rpcUrl } from "@/lib/chain";
 import { contractAddress, hasContract, proposalStatus, voteOnActionAbi } from "@/lib/contract";
 import { formatTime, sameAddress } from "@/lib/format";
 import { txError, useChainProof } from "@/lib/hooks";
@@ -18,7 +18,6 @@ import {
 import type { Proposal, Team, VoteRecord } from "@/lib/types";
 
 const zeroAddress = "0x0000000000000000000000000000000000000000" as const;
-const rpcUrl = "https://rpc.bohr.life";
 
 const steps = [
   "createProposal copies the team wallets into the proposal snapshot. Later member changes do not rewrite that list.",
@@ -177,7 +176,7 @@ export function AuditDossier({
       "Vote on Action audit",
       `Proposal ${proposal.id.toString()}: ${proposal.title}`,
       `Contract ${contractAddress ?? "not set"}`,
-      `Chain 968 · ${rpcUrl}`,
+      `Chain ${botChain.id} · ${rpcUrl}`,
       `Read at block ${proof.data ? proof.data.blockNumber.toString() : "unknown"}`,
       headline,
       ...report.checks.map((check) => `${check.status.toUpperCase()} — ${check.title}. ${check.detail}`),
@@ -231,7 +230,7 @@ export function AuditDossier({
         </div>
         <dl className="panel space-y-4 p-5 text-sm">
           <Identity label="Contract" value={contractAddress ?? "Not set"} href={contractAddress ? `${explorerUrl}/address/${contractAddress}` : undefined} />
-          <Identity label="Chain" value="BOT Chain testnet · 968" />
+          <Identity label="Chain" value={`${botChain.name} · ${botChain.id}`} />
           <Identity label="Endpoint" value={rpcUrl} />
           <Identity label="Read at block" value={proof.data ? proof.data.blockNumber.toLocaleString() : "Reading…"} />
         </dl>

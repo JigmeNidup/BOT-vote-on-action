@@ -5,13 +5,14 @@ import { useState } from "react";
 import { injected } from "@wagmi/core";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { AuditModeProvider } from "@/components/AuditMode";
-import { botChain } from "@/lib/chain";
+import { botChain, botTransportUrls } from "@/lib/chain";
 
 const config = createConfig({
   chains: [botChain],
   connectors: [injected()],
   transports: {
-    [botChain.id]: http(botChain.rpcUrls.default.http[0]),
+    677: http(botTransportUrls[677]),
+    968: http(botTransportUrls[968]),
   },
 });
 

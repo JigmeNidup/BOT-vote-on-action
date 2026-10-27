@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { useAuditMode } from "@/components/AuditMode";
 import { AuditIndex } from "@/components/AuditView";
-import { ContractGate, ErrorText, Loading, Page, PageHeader } from "@/components/ContractGate";
+import { ContractGate, EmptyState, ErrorText, Loading, Page, PageHeader } from "@/components/ContractGate";
 import { ProposalList } from "@/components/ProposalList";
 import { proposalStatus } from "@/lib/contract";
-import { txError, useProposals, useTeams } from "@/lib/hooks";
-import type { Proposal, Team } from "@/lib/types";
+import { txError, useWalletScope } from "@/lib/hooks";
 
 const filters = [
   { id: "all", label: "All" },
@@ -17,16 +16,14 @@ const filters = [
 
 export default function HistoryPage() {
   const { audit } = useAuditMode();
-  const teams = useTeams();
-  const proposals = useProposals();
+  const scope = useWalletScope();
   const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("all");
-  const all = (proposals.data ?? []) as Proposal[];
-  const visible = all.filter((proposal) => {
+  const visible = scope.myProposals.filter((proposal) => {
     if (filter === "open") return proposal.status === proposalStatus.active;
     if (filter === "closed") return proposal.status !== proposalStatus.active;
     return true;
   });
-  const ready = !teams.isLoading && !proposals.isLoading && !teams.error && !proposals.error;
+  const ready = scope.isConnected && !scope.loading && !scope.error;
 
   return (
     <Page>
@@ -34,13 +31,13 @@ export default function HistoryPage() {
         <PageHeader
           eyebrow="On-chain proof"
           title="The ledger, checked"
-          text="Each row compares the stored counters with Voted events. Open a proposal to see the snapshot, the ballots, and the transactions."
+          text="Each of your proposals is checked against its Voted events. Open one to see the snapshot, the ballots, and the transactions."
         />
       ) : (
         <PageHeader
           eyebrow="Archive"
           title="The ledger"
-          text="Every proposal on this contract, including decisions that have already been closed."
+          text="Proposals from teams this wallet owns or belongs to, including decisions it created and ones already closed."
         />
       )}
       <ContractGate>
@@ -56,15 +53,18 @@ export default function HistoryPage() {
             </button>
           ))}
         </div>
-        {teams.isLoading || proposals.isLoading ? <Loading /> : null}
-        {teams.error || proposals.error ? <ErrorText message={txError(teams.error ?? proposals.error)} /> : null}
-        {ready && audit ? <AuditIndex proposals={visible} teams={(teams.data ?? []) as Team[]} /> : null}
+        {!scope.isConnected ? (
+          <EmptyState title="Connect a wallet" text="The ledger shows proposals for teams this wallet owns or belongs to." />
+        ) : null}
+        {scope.isConnected && scope.loading ? <Loading /> : null}
+        {scope.isConnected && scope.error ? <ErrorText message={txError(scope.error)} /> : null}
+        {ready && audit ? <AuditIndex proposals={visible} teams={scope.myTeams} /> : null}
         {ready && !audit ? (
           <ProposalList
             proposals={visible}
-            teams={(teams.data ?? []) as Team[]}
+            teams={scope.myTeams}
             emptyTitle={filter === "all" ? "The ledger is empty" : `No ${filter} proposals`}
-            emptyText="Proposals show up here as soon as a team member creates one."
+            emptyText="Proposals appear here when this wallet creates one or belongs to the team."
           />
         ) : null}
       </ContractGate>

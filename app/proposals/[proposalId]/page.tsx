@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { useAuditMode } from "@/components/AuditMode";
 import { AuditDossier } from "@/components/AuditView";
-import { ContractGate, ErrorText, Loading, Page, TxStatus } from "@/components/ContractGate";
+import { ContractGate, EmptyState, ErrorText, Loading, Page, TxStatus } from "@/components/ContractGate";
 import { VoteBar } from "@/components/VoteBar";
 import { botChain, explorerUrl } from "@/lib/chain";
 import { contractAddress, hasContract, proposalStatus, voteChoice, voteOnActionAbi } from "@/lib/contract";
@@ -71,6 +71,13 @@ export default function ProposalDetailPage() {
     functionName: "isEligible",
     args: proposalId && address ? [proposalId, address] : undefined,
     query: { enabled: hasContract && Boolean(proposalId && address) },
+  });
+  const memberQuery = useReadContract({
+    address: contractAddress ?? zeroAddress,
+    abi: voteOnActionAbi,
+    functionName: "isMember",
+    args: proposal && address ? [proposal.teamId, address] : undefined,
+    query: { enabled: hasContract && Boolean(proposal && address) },
   });
 
   const [suggestion, setSuggestion] = useState("");
@@ -146,6 +153,12 @@ export default function ProposalDetailPage() {
       team &&
       (sameAddress(address, proposal.proposer) || sameAddress(address, team.owner)),
   );
+  const accessLoading = Boolean(isConnected && proposal && (memberQuery.isLoading || eligibleQuery.isLoading));
+  const involved = Boolean(
+    address &&
+      proposal &&
+      (sameAddress(address, proposal.proposer) || memberQuery.data === true || eligibleQuery.data === true),
+  );
   const yes = Number(proposal?.yesCount ?? 0n);
   const no = Number(proposal?.noCount ?? 0n);
   const total = yes + no;
@@ -159,7 +172,24 @@ export default function ProposalDetailPage() {
         {!valid ? <div className="mt-6"><ErrorText message="This proposal does not exist." /></div> : null}
         {valid && proposalQuery.isLoading ? <div className="mt-6"><Loading /></div> : null}
         {valid && proposalQuery.error ? <div className="mt-6"><ErrorText message="This proposal does not exist." /></div> : null}
-        {proposal && audit ? (
+        {proposal && !isConnected ? (
+          <div className="mt-6">
+            <EmptyState
+              title="Connect a wallet"
+              text="A proposal opens when this wallet created it, owns the team, or belongs to the team."
+            />
+          </div>
+        ) : null}
+        {accessLoading ? <div className="mt-6"><Loading /></div> : null}
+        {memberQuery.error || eligibleQuery.error ? (
+          <div className="mt-6"><ErrorText message={txError(memberQuery.error ?? eligibleQuery.error)} /></div>
+        ) : null}
+        {isConnected && proposal && !accessLoading && !memberQuery.error && !eligibleQuery.error && !involved ? (
+          <div className="mt-6">
+            <EmptyState title="Not on this team" text="This proposal belongs to a team the connected wallet does not own or belong to." />
+          </div>
+        ) : null}
+        {isConnected && proposal && !accessLoading && involved && audit ? (
           <AuditDossier
             proposal={proposal}
             team={team}
@@ -168,7 +198,7 @@ export default function ProposalDetailPage() {
             snapshotReady={votersQuery.isSuccess}
           />
         ) : null}
-        {proposal && !audit ? (
+        {isConnected && proposal && !accessLoading && involved && !audit ? (
           <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
             <div className="space-y-6">
               <header>

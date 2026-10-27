@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { BaseError } from "viem";
-import { usePublicClient, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, usePublicClient, useReadContract, useReadContracts, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import {
   type ClosedLog,
   type CreatedLog,
@@ -18,6 +18,8 @@ import {
 } from "@/lib/audit";
 import { botChain } from "@/lib/chain";
 import { contractAddress, hasContract, voteOnActionAbi } from "@/lib/contract";
+import { sameAddress } from "@/lib/format";
+import type { Proposal, Team } from "@/lib/types";
 
 const zeroAddress = "0x0000000000000000000000000000000000000000" as const;
 
@@ -57,6 +59,60 @@ export function useProposals() {
     functionName: "getProposals",
     query: { enabled: hasContract },
   });
+}
+
+export function useWalletScope() {
+  const { address, isConnected } = useAccount();
+  const teamsQuery = useTeams();
+  const proposalsQuery = useProposals();
+  const teams = (teamsQuery.data ?? []) as Team[];
+  const proposals = (proposalsQuery.data ?? []) as Proposal[];
+  const membershipQuery = useReadContracts({
+    contracts: teams.map((team) => ({
+      address: contractAddress ?? zeroAddress,
+      abi: voteOnActionAbi,
+      functionName: "isMember" as const,
+      args: [team.id, address ?? zeroAddress] as const,
+    })),
+    query: { enabled: hasContract && Boolean(address) && teams.length > 0 },
+  });
+  const eligibilityQuery = useReadContracts({
+    contracts: proposals.map((proposal) => ({
+      address: contractAddress ?? zeroAddress,
+      abi: voteOnActionAbi,
+      functionName: "isEligible" as const,
+      args: [proposal.id, address ?? zeroAddress] as const,
+    })),
+    query: { enabled: hasContract && Boolean(address) && proposals.length > 0 },
+  });
+
+  const myTeams = useMemo(() => {
+    if (!address) return [];
+    return teams.filter((team, index) => sameAddress(team.owner, address) || membershipQuery.data?.[index]?.result === true);
+  }, [address, membershipQuery.data, teams]);
+
+  const myProposals = useMemo(() => {
+    if (!address) return [];
+    const teamIds = new Set(myTeams.map((team) => team.id.toString()));
+    return proposals.filter(
+      (proposal, index) =>
+        teamIds.has(proposal.teamId.toString()) ||
+        sameAddress(proposal.proposer, address) ||
+        eligibilityQuery.data?.[index]?.result === true,
+    );
+  }, [address, eligibilityQuery.data, myTeams, proposals]);
+
+  const membershipLoading = Boolean(address) && teams.length > 0 && membershipQuery.isLoading;
+  const eligibilityLoading = Boolean(address) && proposals.length > 0 && eligibilityQuery.isLoading;
+
+  return {
+    address,
+    isConnected,
+    myTeams,
+    myProposals,
+    loading: teamsQuery.isLoading || proposalsQuery.isLoading || membershipLoading || eligibilityLoading,
+    error: teamsQuery.error ?? proposalsQuery.error ?? membershipQuery.error ?? eligibilityQuery.error,
+  };
 }
 
 export type ChainProof = {

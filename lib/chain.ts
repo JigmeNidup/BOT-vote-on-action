@@ -43,3 +43,8 @@ export const botChain = defineChain({
 
 export const explorerUrl = selected.explorer;
 export const rpcUrl = selected.rpc;
+
+export const botTransportUrls = {
+  677: networks.mainnet.rpc,
+  968: networks.testnet.rpc,
+} as const;

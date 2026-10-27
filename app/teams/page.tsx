@@ -2,18 +2,17 @@
 
 import { useState } from "react";
 import { useAccount, useReadContracts } from "wagmi";
-import { ContractGate, ErrorText, Loading, Page, PageHeader, TxStatus } from "@/components/ContractGate";
+import { ContractGate, EmptyState, ErrorText, Loading, Page, PageHeader, TxStatus } from "@/components/ContractGate";
 import { TeamCard } from "@/components/TeamCard";
 import { botChain } from "@/lib/chain";
 import { contractAddress, hasContract, voteOnActionAbi } from "@/lib/contract";
-import { txError, useContractWrite, useTeams } from "@/lib/hooks";
-import type { Team } from "@/lib/types";
+import { txError, useContractWrite, useWalletScope } from "@/lib/hooks";
 
 const zeroAddress = "0x0000000000000000000000000000000000000000" as const;
 
 export default function TeamsPage() {
-  const teamsQuery = useTeams();
-  const teams = (teamsQuery.data ?? []) as Team[];
+  const scope = useWalletScope();
+  const teams = scope.myTeams;
   const membersQuery = useReadContracts({
     contracts: teams.map((team) => ({
       address: contractAddress ?? zeroAddress,
@@ -21,7 +20,7 @@ export default function TeamsPage() {
       functionName: "getMembers" as const,
       args: [team.id] as const,
     })),
-    query: { enabled: hasContract && teams.length > 0 },
+    query: { enabled: hasContract && scope.isConnected && teams.length > 0 },
   });
   const { isConnected, chainId } = useAccount();
   const onBotChain = isConnected && chainId === botChain.id;
@@ -56,7 +55,7 @@ export default function TeamsPage() {
       <PageHeader
         eyebrow="Membership"
         title="Teams"
-        text="The connected wallet becomes the owner and the first member. Only that owner can change the roster."
+        text="Teams this wallet owns or belongs to. Creating a team makes this wallet the owner and the first member."
       />
       <ContractGate>
         <div className="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -91,19 +90,24 @@ export default function TeamsPage() {
           </form>
 
           <div className="space-y-4">
-            {teamsQuery.isLoading ? <Loading /> : null}
-            {teamsQuery.error ? <ErrorText message={txError(teamsQuery.error)} /> : null}
-            {membersQuery.error ? <ErrorText message={txError(membersQuery.error)} /> : null}
-            {!teamsQuery.isLoading && !teamsQuery.error && teams.length === 0 ? (
-              <p className="rounded-3xl border border-dashed border-line bg-white/60 p-8 text-muted">No teams yet.</p>
+            {!isConnected ? (
+              <EmptyState title="Connect a wallet" text="Teams you create or join show up here after the wallet connects." />
             ) : null}
-            {teams.map((team, index) => (
+            {isConnected && (scope.loading || (teams.length > 0 && !membersQuery.isSuccess && !membersQuery.isError)) ? <Loading /> : null}
+            {isConnected && scope.error ? <ErrorText message={txError(scope.error)} /> : null}
+            {membersQuery.error ? <ErrorText message={txError(membersQuery.error)} /> : null}
+            {isConnected && !scope.loading && !scope.error && teams.length === 0 ? (
+              <p className="rounded-3xl border border-dashed border-line bg-white/60 p-8 text-muted">You have no teams yet.</p>
+            ) : null}
+            {isConnected && !scope.loading && (teams.length === 0 || membersQuery.isSuccess)
+              ? teams.map((team, index) => (
               <TeamCard
                 key={team.id.toString()}
                 team={team}
                 members={(membersQuery.data?.[index]?.result as `0x${string}`[] | undefined) ?? []}
               />
-            ))}
+            ))
+              : null}
           </div>
         </div>
       </ContractGate>

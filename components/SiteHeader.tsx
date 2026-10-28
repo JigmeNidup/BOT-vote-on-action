@@ -115,7 +115,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden bg-rail text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:justify-between lg:px-4 lg:py-6">
         <div>
           <Link href="/" className="mb-8 block px-3">
-            <span className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-moss text-sm font-bold">V</span>
+            <img src="/vote-on-action-mark.png" alt="" className="mb-3 h-11 w-11 rounded-2xl bg-white object-contain p-1" />
             <span className="block font-serif text-3xl leading-none">Vote on Action</span>
             <span className="mt-2 block text-xs uppercase tracking-[0.18em] text-white/50">
               {audit ? "Audit trail" : botChain.name}
@@ -135,10 +135,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className={audit ? "audit-on min-w-0" : "min-w-0"}>
+      <div className={audit ? "audit-on flex min-h-screen min-w-0 flex-col" : "flex min-h-screen min-w-0 flex-col"}>
         <header className="sticky top-0 z-20 border-b border-line/80 bg-paper/90 px-4 py-3 backdrop-blur lg:hidden">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/" className="font-serif text-2xl">
+            <Link href="/" className="flex min-w-0 items-center gap-2 font-serif text-2xl leading-none">
+              <img src="/vote-on-action-mark.png" alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-contain p-0.5" />
               Vote on Action
             </Link>
             <WalletControls />
@@ -159,7 +160,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             Audit view reads chain {botChain.id}. It does not send a transaction.
           </p>
         ) : null}
-        <main>{children}</main>
+        <main className="flex-1">{children}</main>
+        <footer className="bg-black px-4 py-5 sm:px-8">
+          <div className="mx-auto grid max-w-6xl items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
+            <p className="text-center text-sm font-semibold text-white sm:text-left">Vote on Action on BOT Chain</p>
+            <a
+              href="https://botchain.ai"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="BOT Chain, botchain.ai"
+              className="inline-flex justify-self-center bg-black"
+            >
+              <img src="/bot-chain-logo.png" alt="" className="h-8 w-auto bg-black" />
+            </a>
+            <a className="btn btn-ghost justify-self-center sm:justify-self-end" href="https://scan.botchain.ai" target="_blank" rel="noreferrer">
+              scan.botchain.ai
+            </a>
+          </div>
+        </footer>
       </div>
     </div>
   );
